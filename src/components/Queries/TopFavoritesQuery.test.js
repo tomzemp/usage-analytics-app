@@ -31,6 +31,7 @@ describe('<TopFavoritesQuery>', () => {
                 eventType: '',
                 pageSize: '',
                 sortOrder: '',
+                countPassiveViews: false,
             }
 
             const wrapper = mount(
@@ -64,6 +65,7 @@ describe('<TopFavoritesQuery>', () => {
                 eventType: '',
                 pageSize: '',
                 sortOrder: '',
+                countPassiveViews: false,
             }
 
             const wrapper = mount(
@@ -100,6 +102,7 @@ describe('<TopFavoritesQuery>', () => {
                 eventType: '',
                 pageSize: '',
                 sortOrder: '',
+                countPassiveViews: false,
             }
 
             const wrapper = mount(
@@ -132,6 +135,7 @@ describe('<TopFavoritesQuery>', () => {
                 eventType: '',
                 pageSize: '',
                 sortOrder: '',
+                countPassiveViews: false,
             }
 
             const wrapper = mount(

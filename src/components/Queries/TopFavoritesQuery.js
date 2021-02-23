@@ -8,8 +8,12 @@ import {
     CenteredContent,
     NoticeBox,
 } from '@dhis2/ui'
+import {
+    DASHBOARD_VIEW,
+    PASSIVE_DASHBOARD_VIEW,
+} from '../../constants/eventTypes'
 
-const query = {
+const standardQuery = {
     favorites: {
         resource: 'dataStatistics/favorites',
         params: ({ eventType, pageSize, sortOrder, fields }) => ({
@@ -21,22 +25,54 @@ const query = {
     },
 }
 
+const passiveDashboardQuery = {
+    favorites: {
+        resource: 'dataStatistics/favorites',
+        params: ({ eventType, pageSize, sortOrder, fields }) => ({
+            eventType,
+            pageSize,
+            sortOrder,
+            fields,
+        }),
+    },
+    passiveFavorites: {
+        resource: 'dataStatistics/favorites',
+        params: ({ pageSize, sortOrder, fields }) => ({
+            eventType: PASSIVE_DASHBOARD_VIEW,
+            pageSize,
+            sortOrder,
+            fields,
+        }),
+    },
+}
+
+const getQuery = ({ countPassiveViews, eventType }) => {
+    if (countPassiveViews && eventType === DASHBOARD_VIEW) {
+        return passiveDashboardQuery
+    }
+    return standardQuery
+}
+
 const TopFavoritesQuery = ({
+    countPassiveViews,
     eventType,
     pageSize,
     sortOrder,
     fields,
     children,
 }) => {
-    const { loading, error, data, called, refetch } = useDataQuery(query, {
-        lazy: true,
-        variables: {
-            eventType,
-            pageSize,
-            sortOrder,
-            fields,
-        },
-    })
+    const { loading, error, data, called, refetch } = useDataQuery(
+        getQuery({ countPassiveViews, eventType }),
+        {
+            lazy: true,
+            variables: {
+                eventType,
+                pageSize,
+                sortOrder,
+                fields,
+            },
+        }
+    )
 
     useEffect(() => {
         refetch({ eventType, pageSize, sortOrder, fields })
@@ -69,11 +105,26 @@ const TopFavoritesQuery = ({
         )
     }
 
+    if (countPassiveViews && data.passiveFavorites) {
+        const passiveFavoritesHash = data.passiveFavorites.reduce(
+            (hashMap, item) => {
+                hashMap[item.id] = item.views
+                return hashMap
+            },
+            {}
+        )
+
+        data.favorites.forEach(item => {
+            item.views += passiveFavoritesHash[item.id] || 0
+        })
+    }
+
     return children(data.favorites)
 }
 
 TopFavoritesQuery.propTypes = {
     children: PropTypes.func.isRequired,
+    countPassiveViews: PropTypes.bool.isRequired,
     eventType: PropTypes.string.isRequired,
     fields: PropTypes.array.isRequired,
     pageSize: PropTypes.string.isRequired,
